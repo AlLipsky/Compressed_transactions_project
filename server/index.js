@@ -1,43 +1,62 @@
-const uniq = require('lodash/uniq')
+const uniq = require("lodash/uniq");
 
 const io = require("socket.io")(8001, {
   path: "/",
   serveClient: true,
   pingInterval: 10000,
   pingTimeout: 5000,
-  cookie: false
-})
+  cookie: false,
+});
 
-const data = [{tradingParty: "me", counterparty: "you", amount: -400},
-  {tradingParty: "me", counterparty: "you", amount: 500},
-  {tradingParty: "me", counterparty: "someone_else", amount: 100}]
+const db = require("./db");
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
+  db(async (collection) => {
+    const receivingCursor = collection.find({ amount: { $gt: 0 } });
+    const receivingCursorTransactions = await receivingCursor.toArray();
+    socket.emit("get receiving transactions", receivingCursorTransactions);
 
-  socket.emit('get old transactions', JSON.stringify(data))
+    const payingCursor = collection.find({ amount: { $lt: 0 } });
+    const payingCursorTransactions = await payingCursor.toArray();
+    socket.emit("get paying transactions", payingCursorTransactions);
 
-  socket.on('add new transaction', (transaction) => {
-    data.push(JSON.parse(transaction))
+    socket.on("compress transactions", () => {
+      const oldTransactions = receivingCursorTransactions.concat(
+        payingCursorTransactions
+      );
+      const counterParties = uniq(oldTransactions.map((i) => i.counterparty));
+      const compressTransaction = [];
 
-    socket.emit('add new transaction', JSON.stringify(data))
-  })
+      counterParties.map((counter) => {
+        const distinctTransactions = oldTransactions.filter(
+          (f) => f.counterparty === counter
+        );
+        let sumAmount = 0;
+        distinctTransactions.map(
+          (transaction) => (sumAmount += transaction.amount)
+        );
+        compressTransaction.push({
+          tradingParty: "me",
+          counterparty: counter,
+          amount: sumAmount,
+        });
+      });
 
-  socket.on('compress transactions', () => {
-    const counterParties = uniq(data.map(i => i.counterparty))
-    const compressTransaction = []
-    console.log(counterParties)
+      socket.emit("compress transactions", JSON.stringify(compressTransaction));
+    });
+  });
 
-    counterParties.map((counterparty) => {
-      const accumulator = data.reduce((acc, currentValue) => {
-        if(currentValue.counterparty === counterparty) {
-          console.log(acc)
-          return acc + currentValue.amount
-        }
-      })
+  socket.on("add new transaction", async (transaction) => {
+    db(async (collection) => {
+      const newTransaction = await collection.insertOne(
+        JSON.parse(transaction)
+      );
+      const { ops } = newTransaction;
+      socket.emit("add new transaction", ops[0]);
+    });
+  });
 
-      compressTransaction.push({tradingParty: "me", counterparty: counterparty, amount: accumulator})
-    })
-
-    socket.emit('compress transactions', JSON.stringify(compressTransaction))
-  })
-})
+  socket.on("disconnection", async (socket) => {
+    await mongoClient.close();
+  });
+});

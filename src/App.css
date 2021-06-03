@@ -1,5 +1,9 @@
 .App {
   width: fit-content;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex-direction: column;
   text-align: center;
   padding: 20px;
   margin: 10px;

@@ -1,53 +1,39 @@
-import React from 'react';
+import React from "react";
+import TableRow from "./TableRow";
+import { Table } from "reactstrap";
 
-const Table = () => {
-
-return(
-
-<div
+const TableComponent = ({ transactions, transactionType }) => {
+  const tableRow = transactions.map((transaction) => {
+    return <TableRow transaction={transaction} />;
+  });
+  return (
+    <div
+      style={{
+        display: "flex",
+        padding: "20px",
+        justifyContent: "center",
+      }}
+    >
+      <Table
+        border="2"
+        bordered
+        striped
         style={{
-          display: "flex",
-          marginLeft: "-5px",
-          marginRight: "-5px",
+          margin: "20px",
+          captionSide: "top",
         }}
       >
-        <div style={{ flex: "50%", padding: "5px" }}>
-          <table border="1">
-            <tr>
-              <th>Counter party name </th>
-              <th>Amount</th>
-            </tr>
-            <tr>
-              <td>January</td>
-              <td>$200</td>
-            </tr>
-          </table>
-        </div>
-        <div style={{ flex: "50%", padding: "5px" }}>
-          <table border="1">
-            <tr>
-              <th>Counter party name </th>
-              <th>Amount</th>
-            </tr>
-            <tr>
-              <td>me</td>
-              <td>$400</td>
-            </tr>
-            <tr>
-              <td>me</td>
-              <td>$400</td>
-            </tr>
-            <tr>
-              <td>me</td>
-              <td>$400</td>
-            </tr>
-            <tr>
-              <td>me</td>
-              <td>$400</td>
-            </tr>
-          </table>
-        </div>
-</div>
-)
-}
-export default Table;
+        <caption style={{ textAlign: "center" }}>{transactionType}</caption>
+        <thead>
+          <tr>
+            <th>Counterparty</th>
+            <th>Tradingparty</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>{tableRow}</tbody>
+      </Table>
+    </div>
+  );
+};
+export default TableComponent;
