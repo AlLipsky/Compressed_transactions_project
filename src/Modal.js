@@ -1,12 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { Modal, ModalHeader, ModalBody } from "reactstrap";
 
 const ModalComponent = (props) => {
   const { className, modalBodyData, headerName } = props;
-
-  const [modal, setModal] = useState(false);
-
-  const toggle = () => setModal(!modal);
 
   return (
     <div>

@@ -3,8 +3,8 @@ import TableRow from "./TableRow";
 import { Table } from "reactstrap";
 
 const TableComponent = ({ transactions, transactionType }) => {
-  const tableRow = transactions.map((transaction) => {
-    return <TableRow transaction={transaction} />;
+  const tableRow = transactions.map((transaction, index) => {
+    return <TableRow key={index} transaction={transaction} />;
   });
   return (
     <div
