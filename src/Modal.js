@@ -11,7 +11,7 @@ const ModalComponent = (props) => {
   return (
     <div>
       <Modal
-        isOpen={modal || props.isOpen}
+        isOpen={props.isOpen}
         fade={false}
         toggle={props.headerCloserFunc}
         className={className}
